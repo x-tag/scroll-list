@@ -1,0 +1,23 @@
+{
+  "name": "document.register",
+  "description": "Document.register polyfill for Web-Components",
+  "version": "0.0.0",
+  "keywords": [
+    "web-components",
+    "document.register",
+    "element",
+    "x-tag"
+  ],
+  "scripts": [
+    "src/document.register.js"
+  ],
+  "gitHead": "26ac6f623607cd40c06973c0c11f85fcda812dbf",
+  "readme": "web-components\n==============\n\nCross-browser W3 Web Components polyfills and helpers",
+  "readmeFilename": "README.md",
+  "_id": "document.register@0.1.0",
+  "commit": "26ac6f623607cd40c06973c0c11f85fcda812dbf",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mozilla/web-components.git"
+  }
+}
