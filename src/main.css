@@ -1,0 +1,11 @@
+x-scrolling-list{
+	display: inline-block;
+	border: solid red 3px;
+	overflow: scroll;
+}
+x-item{
+	display: block;
+}
+.scroll-list-top, .scroll-list-bottom{
+	height: 0;
+}

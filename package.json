@@ -1,0 +1,13 @@
+{
+  "name": "scrolling-ist",
+  "description": "",
+  "version": "0.1.0",
+  "scripts": {
+    "test": "grunt test"
+  },
+  "devDependencies": {
+    "grunt": "~0.4.0rc5",
+    "grunt-contrib-jshint": "0.1.1rc5"
+  },
+  "dependencies": {}
+}

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8" />
+
+    <title>Scrolling - List</title>
+    <link rel="stylesheet" type="text/css" href="../src/main.css" />
+    
+    <script type="text/javascript" src="../components/document.register/src/document.register.js"></script>
+    <script type="text/javascript" src="../components/x-tag-core/src/core.js"></script>
+    <script type="text/javascript" src="../src/main.js"></script>
+    
+    <style>
+      #list{
+        height: 600px;
+      }
+      #buttons {
+        float: right;
+      }
+    </style>
+  </head>
+  
+<body>
+  <div id="buttons">
+    <button data-items="100">Load 100 Items</button>
+
+    <button data-items="1000">Load 1000 Items</button>
+
+    <button data-items="10000">Load 10000 Items</button>
+
+    <button data-items="50000">Load 50000 Items</button>
+
+    <button data-items="0">Clear</button>
+  </div>
+
+  <x-scrolling-list id="list">
+
+  </x-scrolling-list>
+
+ 
+
+</body>
+
+<script type="text/javascript">
+  document.addEventListener('DOMContentLoaded', function(){
+    var items = [], iter = 50;
+    while(iter--){
+      items.splice(0,0, { title: 'Item '+ iter, description: 'Describing item ' + iter });     
+    }
+    document.getElementById('list').items = items;
+
+
+  });
+
+  xtag.addEvent(document.body,'click:delegate(button)', function(e){    
+    var items = [], iter = e.target.dataset.items;
+    while(iter--){
+      items.splice(0,0, { title: 'Item '+ iter, description: 'Describing item ' + iter });     
+    }
+    document.getElementById('list').items = items;
+  });
+  
+</script>
+
+</html>
