@@ -1,4 +1,23 @@
-# Usage
+## Install
+
+*Requirements*
+
+Node / NPM
+
+Bower (Package Manager)
+
+```
+npm install bower -g
+```
+
+For development the following command to install dependencies
+
+```
+bower install 
+```
+
+
+## Usage
 
 Basic usage of x-scrolling-list
 
