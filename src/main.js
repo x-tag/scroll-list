@@ -1,6 +1,5 @@
 (function(){
 
-
 window.requestAnimFrame = (function(){
       return  window.requestAnimationFrame       || 
               window.webkitRequestAnimationFrame || 
@@ -11,123 +10,127 @@ window.requestAnimFrame = (function(){
                 window.setTimeout(callback, 1000 / 60);
               };
     })();
-
-  xtag.register('x-item', {
-    lifecycle:{
-      created: function(){
-        this.innerHTML = '<h2></h2><p></p>';
-      }
-    }, 
-    accessors: {
-      heading: {
-        get: function(){
-          return this.querySelector('h2').innerHTML;
-        },
-        set: function(value){
-          //console.log("h2",value);
-          this.querySelector('h2').textContent = value;
-        }
-      },
-      description: {
-        get: function(){
-          return this.querySelector('p').innerHTML;
-        },
-        set: function(value){           
-          this.querySelector('p').innerHTML = value;
-        }
-      },
-    }
-  });
-
+    
   xtag.register('x-scrolling-list', {
     lifecycle:{
       created: function(){
-        this.innerHTML = '<div></div>';
+        this.innerHTML = '<x-growbox></x-growbox>';
         this.xtag.data = {
           lastScroll: 0,
           index: 0,
           items: [],
-          buffer: 20,
+          buffer: 8,
           avgHeight: 0,          
-          delta: 0
-        };
+          delta: 0,
+          updating: false
+        };        
       }
     },
     events:{
-      'overflow': function(){
-   
+      'overflow': function(e){
+      
       }, 
-      'underflow': function(){
+      'underflow': function(e){
 
       },
-      'scroll': function(e){
-        var list = this;
-        requestAnimFrame(function(){
+      'grow': function(e){
+        if (this.scrollHeight > getValue(this.firstChild.style.height)){
           
-          var idx = 0,
-            delta = 0;
+        }
+        e.stopPropagation();
+      },
+      'shrink': function(e){
+        console.log("shrink");        
+        e.stopPropagation();
+      },
+      'scroll': function(e){
+        var list = this,
+          delta = 0;
+        
+        delta = list.scrollTop - list.xtag.data.lastScroll;
 
-          delta = list.scrollTop - list.xtag.data.lastScroll;
-          list.xtag.data.lastScroll = list.scrollTop;
+        list.xtag.data.lastScroll = list.scrollTop;
+
+        list.xtag.data.delta += delta;
+        
+        requestAnimFrame(function(){
+
+          var idx = 0,
+            growBoxHeight = getValue(list.firstChild.style.height),
+            marginTop = getValue(list.firstChild.style.marginTop),
+            marginBottom = getValue(list.firstChild.style.marginBottom),
+            avgHeight = growBoxHeight / list.buffer;
+
 
           if (list.scrollTop == 0 && list.xtag.data.index != 0){
-              for (var i = 0; i < list.xtag.data.index; i++){
-                var data = list.items[--list.xtag.data.index];
-                list.firstChild.lastChild.heading = data.title;
-                list.firstChild.insertBefore(list.firstChild.lastChild, list.firstChild.firstChild);
-              }              
-              list.firstChild.style.marginTop = 0 + "px";
-              list.firstChild.style.marginBottom = list.items.length * list.xtag.data.avgHeight; + "px";
-              return;
+            console.log("TOP");
+            
+            idx = list.xtag.data.index-1;
+            while (idx>-1){
+                var data = list.items[idx];
+                list.render.call(list,
+                  list.innerList.lastChild, 
+                  data,
+                  idx);
+                list.innerList.insertBefore(list.innerList.lastChild, list.innerList.firstChild);
+                idx--;
+            }
+            list.xtag.data.index = 0;
+            list.firstChild.style.marginTop = 0 + "px";
+            list.firstChild.style.marginBottom = list.items.length * list.xtag.data.avgHeight; + "px";
+            return;
           }
 
-          if (delta<0){
+          if (delta>0){
 
-            list.xtag.data.delta += delta;
+            idx = list.xtag.data.index + list.xtag.data.buffer;
 
-            delta = Math.abs(list.xtag.data.delta);
+            if (list.xtag.data.delta > avgHeight && list.items.length > idx){
 
-            if (delta > list.xtag.data.avgHeight){
+// this height is wrong, it causes the list to jump.  Some reason the avgHeight is closer
+// but there has to be a way to get the correct height
 
-              var swapCount = Math.round(delta/list.xtag.data.avgHeight);              
-              var marginDelta = list.xtag.data.avgHeight * swapCount;
+              var itemHeight = avgHeight; //list.innerList.firstChild.scrollHeight;
 
-              list.xtag.data.delta += marginDelta;
+              list.xtag.data.delta -= itemHeight;
 
-              for (var i = 0; i < swapCount; i++){     
-                var data = list.items[--list.xtag.data.index];
-                list.firstChild.lastChild.heading = data.title;                
-                list.firstChild.insertBefore(list.firstChild.lastChild, list.firstChild.firstChild);
-              }
+              list.firstChild.style.marginTop = (marginTop + itemHeight) + "px";
+              list.firstChild.style.marginBottom = Math.max(0,(marginBottom - itemHeight)) + "px";
 
-              list.firstChild.style.marginTop = (getValue(list.firstChild.style.marginTop) - marginDelta) + "px";
-              list.firstChild.style.marginBottom = (getValue(list.firstChild.style.marginBottom) + marginDelta) + "px";
+              list.render.call(list,
+                list.innerList.firstChild, 
+                list.items[idx],
+                idx);
+
+              list.innerList.appendChild(list.innerList.firstChild);
+
+              list.xtag.data.index++;
+            }
+          }
+          else if (delta<0){
+
+            if (list.xtag.data.delta * -1 > avgHeight && list.xtag.data.index > 0){
+
+              idx = --list.xtag.data.index;// - 1;
+              
+              var itemHeight = avgHeight; //list.innerList.firstChild.scrollHeight;
+
+              list.xtag.data.delta += itemHeight;
+
+              list.firstChild.style.marginTop = Math.max(0,(marginTop - itemHeight)) + "px";
+              list.firstChild.style.marginBottom = (marginBottom + itemHeight) + "px";
+
+              list.render.call(list,
+                list.innerList.lastChild, 
+                list.items[idx],
+                idx);
+
+              list.innerList.insertBefore(list.innerList.lastChild, list.innerList.firstChild);
 
             }
           }
-          else if (delta>0){
 
-            list.xtag.data.delta += delta;
 
-            if (list.xtag.data.delta > list.xtag.data.avgHeight){
-
-              var swapCount = Math.round(list.xtag.data.delta/list.xtag.data.avgHeight);
-              var marginDelta = list.xtag.data.avgHeight * swapCount;
-
-              list.xtag.data.delta -= marginDelta;
-
-              for (var i = 0; i < swapCount; i++){
-                var data = list.items[(list.xtag.data.index++) + list.xtag.data.buffer];
-                list.firstChild.firstChild.heading = data.title;
-                //console.log(data.title);
-                list.firstChild.appendChild(list.firstChild.firstChild);
-              }
-
-              list.firstChild.style.marginTop = (getValue(list.firstChild.style.marginTop) + marginDelta) + "px";
-              list.firstChild.style.marginBottom = (getValue(list.firstChild.style.marginBottom) - marginDelta) + "px";
-
-            }
-          }
         });
       }
     },
@@ -157,6 +160,21 @@ window.requestAnimFrame = (function(){
           this.xtag.data.buffer = Number(value);
           init.call(this);
         }
+      },
+      render: {
+        get: function(){
+          return this.xtag.data.renderFn || function(elem, data, idx){
+            console.log("default rendering fn, replace me.", elem, data);
+          };
+        },
+        set: function(fn){
+          return this.xtag.data.renderFn = fn;
+        }
+      }, 
+      innerList: {
+        get: function(){
+          return this.firstChild.firstChild.firstChild;
+        }
       }
     }
   });
@@ -168,38 +186,49 @@ function init(){
   var idx = this.index,    
     length = this.items.length;
 
-  this.firstChild.innerHTML = '';
+  this.innerList.innerHTML = '';
   for (var count = 0; count < this.buffer && (idx+count)<length; count++){    
     var item = this.items[count+idx];
-    var elem = document.createElement('x-item');
-    elem.heading = item.title;
-    elem.description = item.description;
-    this.firstChild.appendChild(elem);
+    var elem = document.createElement('li');
+    this.innerList.appendChild(elem);
+    this.render.call(this, elem, item, count);
   }
-  setMargins.call(this);
+
+  var list = this;
+
+  // center list
+  setTimeout(function(){
+    var growBoxHeight = getValue(list.firstChild.style.height); 
+    if (growBoxHeight < list.scrollHeight){    
+      var topMargin = (list.scrollHeight/2) - (growBoxHeight/2);    
+      list.firstChild.style.marginTop = topMargin + "px";
+    } else {
+      //console.log("center larger list", growBoxHeight, list.scrollHeight);
+    }
+    setMargins.call(list);
+  },0);
+  
+  
+
 }
 
 function setMargins(){
 
   var idx = this.index,    
-    length = this.items.length,  
+    length = this.items.length,
     marginTop = getValue(this.firstChild.style.marginTop),
+    growBoxHeight = getValue(this.firstChild.style.height),
     avgHeight = 0;
 
-  if (marginTop == 0){
-    avgHeight = this.xtag.data.avgHeight = (this.firstChild.scrollHeight - marginTop)  / (this.buffer) ;
-  }
-  else{
-    avgHeight = this.xtag.data.avgHeight;
-  }
+  avgHeight = growBoxHeight / this.buffer;
 
-  marginTop = avgHeight * idx;
+  marginTop = avgHeight * idx + marginTop;
   var bottomMargin = avgHeight * (length - this.buffer - idx);
+
+  //console.log("DEBUG setMargins:",bottomMargin, marginTop, avgHeight, (length - this.buffer - idx));
 
   this.firstChild.style.marginTop = marginTop + "px";
   this.firstChild.style.marginBottom = bottomMargin + "px";
-
-//  this.scrollTop = marginTop;
 
 }
 
