@@ -1,0 +1,32 @@
+# Usage
+
+Basic usage of x-scrolling-list
+
+```javascript
+// Create a new scrolling list element
+
+var list = document.createElement('x-scrolling-list');
+document.body.appendChild(list);
+
+// Define what to do when rendering each data item
+list.render = function(element, dataItem, index){
+
+  // the element will be an LI, do whatever you would like to it.
+
+  // initial render, so create some base template
+  if(!element.firstChild){  
+    elem.innerHTML = '<h2></h2><p></p>';
+  }
+
+  elem.children[0].innerHTML = dataItem.title;
+  elem.children[1].innerHTML = dataItem.description;
+};
+
+
+// assign JSON data
+list.items = [
+  { title: "Some data 1", description: "blah" },
+  { title: "Some data 2", description: "blah" }
+]
+
+```

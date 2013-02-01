@@ -50,7 +50,7 @@ window.requestAnimFrame = (function(){
           lastScroll: 0,
           index: 0,
           items: [],
-          buffer: 20,
+          buffer: 6,
           avgHeight: 0,          
           delta: 0,
           updating: false
@@ -81,14 +81,18 @@ window.requestAnimFrame = (function(){
 
           list.xtag.data.delta += delta;
 
-          //console.log("DELTA:", delta, list.xtag.data.delta, list.xtag.data.index,list.firstChild.style.marginTop, list.firstChild.style.marginBottom);
+          console.log("DELTA:", delta, list.xtag.data.delta, list.xtag.data.index,list.firstChild.style.marginTop, list.firstChild.style.marginBottom);
 
           if (list.scrollTop == 0 && list.xtag.data.index != 0){
-              for (var i = 0; i < list.xtag.data.index; i++){
-                var data = list.items[--list.xtag.data.index];
+              while (--list.xtag.data.index){
+                /*var data = list.items[list.xtag.data.index];
                 list.firstChild.lastChild.heading = data.title;
-                list.firstChild.lastChild.description = data.description;
-                list.firstChild.insertBefore(list.firstChild.lastChild, list.firstChild.firstChild);
+                list.firstChild.lastChild.description = data.description;*/
+
+                xtag.addClass(list.firstChild.children[list.xtag.data.index], 'show');
+                xtag.removeClass(list.firstChild.children[list.xtag.data.index+list.xtag.data.buffer], 'show');
+                //list.firstChild.insertBefore(list.firstChild.lastChild, list.firstChild.firstChild);
+
               }              
               list.firstChild.style.marginTop = 0 + "px";
               list.firstChild.style.marginBottom = list.items.length * list.xtag.data.avgHeight; + "px";
@@ -101,16 +105,20 @@ window.requestAnimFrame = (function(){
 
             if (delta > list.xtag.data.avgHeight){
 
-              var swapCount = Math.round(delta/list.xtag.data.avgHeight);
+              var swapCount = Math.round(delta/list.xtag.data.avgHeight);              
               var marginDelta = list.xtag.data.avgHeight * swapCount;
 
               list.xtag.data.delta += marginDelta;
 
               for (var i = 0; i < swapCount; i++){     
-                var data = list.items[--list.xtag.data.index];
-                list.firstChild.lastChild.heading = data.title;
-                list.firstChild.lastChild.description = data.description;
-                list.firstChild.insertBefore(list.firstChild.lastChild, list.firstChild.firstChild);
+                list.xtag.data.index--;
+                //var data = list.items[--list.xtag.data.index];
+                //list.firstChild.lastChild.heading = data.title;
+                //list.firstChild.lastChild.description = data.description;
+
+                xtag.addClass(list.firstChild.children[list.xtag.data.index], 'show');
+                xtag.removeClass(list.firstChild.children[list.xtag.data.index+list.xtag.data.buffer], 'show');
+                //list.firstChild.insertBefore(list.firstChild.lastChild, list.firstChild.firstChild);
               }
 
               list.firstChild.style.marginTop = (getValue(list.firstChild.style.marginTop) - marginDelta) + "px";
@@ -128,12 +136,22 @@ window.requestAnimFrame = (function(){
               list.xtag.data.delta -= marginDelta;
 
               for (var i = 0; i < swapCount; i++){
-                var data = list.items[(list.xtag.data.index++) + list.xtag.data.buffer];
+                
+                /*var data = list.items[(list.xtag.data.index++) + list.xtag.data.buffer];
                 if (!data) return;
 
                 list.firstChild.firstChild.heading = data.title;
                 list.firstChild.lastChild.description = data.description;
-                list.firstChild.appendChild(list.firstChild.firstChild);
+                */
+
+ 
+                xtag.removeClass(list.firstChild.children[list.xtag.data.index], 'show');
+                xtag.addClass(list.firstChild.children[list.xtag.data.index+list.xtag.data.buffer], 'show');
+                
+list.xtag.data.index++; 
+
+
+                //list.firstChild.appendChild(list.firstChild.firstChild);
               
               }
 
@@ -186,11 +204,16 @@ function init(){
     length = this.items.length;
 
   this.firstChild.innerHTML = '';
-  for (var count = 0; count < this.buffer && (idx+count)<length; count++){    
+  for (var count = 0; count < length; count++){    
     var item = this.items[count+idx];
     var elem = document.createElement('x-item');
     elem.heading = item.title;
     elem.description = item.description;
+    if (count >= idx && count < idx+this.buffer){
+      xtag.addClass(elem,'show');
+      console.log("adding class");
+    }
+
     this.firstChild.appendChild(elem);
   }
   setMargins.call(this);

@@ -1,115 +1,137 @@
 (function(){
 
-
-
-  var draw = function(items){
-    items.forEach(function(item){
-      var elem = document.createElement('x-item');
-      elem.title = item.title;
-      elem.description = item.description;
-      this.addItem(elem);
-    },this);
-  }
-
-  xtag.register('x-item', {
-    lifecycle:{
-      created: function(){
-        this.innerHTML = '<h2></h2><p></p>';
-      }
-    }, 
-    accessors: {
-      title: {
-        get: function(){
-          return this.querySelector('h2').innerHTML;
-        },
-        set: function(value){          
-          this.querySelector('h2').innerHTML = value;
-        }
-      },
-      description: {
-        get: function(){
-          return this.querySelector('p').innerHTML;
-        },
-        set: function(value){           
-          this.querySelector('p').innerHTML = value;
-        }
-      },
-    }
-  });
-
+window.requestAnimFrame = (function(){
+      return  window.requestAnimationFrame       || 
+              window.webkitRequestAnimationFrame || 
+              window.mozRequestAnimationFrame    || 
+              window.oRequestAnimationFrame      || 
+              window.msRequestAnimationFrame     || 
+              function( callback ){
+                window.setTimeout(callback, 1000 / 60);
+              };
+    })();
+    
   xtag.register('x-scrolling-list', {
     lifecycle:{
       created: function(){
-        this.innerHTML = '<div></div>';
+        this.innerHTML = '<x-growbox></x-growbox>';
         this.xtag.data = {
           lastScroll: 0,
           index: 0,
           items: [],
-          overflown: false
-        };
+          buffer: 8,
+          avgHeight: 0,          
+          delta: 0,
+          updating: false
+        };        
       }
     },
     events:{
-      'overflow': function(){
-        console.log("overflown");
-        this.xtag.data.overflown = true;
+      'overflow': function(e){
+      
       }, 
-      'underflow': function(){
+      'underflow': function(e){
 
       },
+      'grow': function(e){
+        console.log("grow", this, this.scrollHeight, getValue(this.firstChild.style.height));
+        if (this.scrollHeight > getValue(this.firstChild.style.height)){
+          console.log("growing");
+        }
+        e.stopPropagation();
+      },
+      'shrink': function(e){
+        console.log("shrink");        
+        e.stopPropagation();
+      },
       'scroll': function(e){
-        var list = this;
-        requestAnimationFrame(function(){
-          
-          var idx = 0;
+        var list = this,
+          delta = 0;
+        
+        delta = list.scrollTop - list.xtag.data.lastScroll;
 
-          if (list.xtag.data.lastScroll > list.scrollTop){
-            list.xtag.data.lastScroll = list.scrollTop;
-            console.log("UP");
+        list.xtag.data.lastScroll = list.scrollTop;
 
-            idx = list.firstChild.children.length-1;
+        list.xtag.data.delta += delta;
+        
+        requestAnimFrame(function(){
 
-            // remove nodes on the bottom 
-            /*while(list.scrollTop < list.xtag.data.nodes.children[idx--].offsetTop){}
-              
-            if (idx+2 < list.xtag.data.nodes.children.length){
+          var idx = 0,
+            growBoxHeight = getValue(list.firstChild.style.height),
+            marginTop = getValue(list.firstChild.style.marginTop),
+            marginBottom = getValue(list.firstChild.style.marginBottom),
+            avgHeight = growBoxHeight / list.buffer;
 
-              var before = list.scrollHeight;
-              list.xtag.data.nodes.removeChild(list.xtag.data.nodes.lastChild);
 
-              list.lastChild.style.height = list.lastChild.style.height.length ? 
-                Number(list.lastChild.style.height.match(/(\d+)/)[1]) + (before - list.scrollHeight) + "px" : 
-                (before - list.scrollHeight) + "px";
-
-            }*/
+          if (list.scrollTop == 0 && list.xtag.data.index != 0){
+            console.log("TOP");
             
-
-            // add nodes to top
-
-          }
-          else if (list.xtag.data.lastScroll < list.scrollTop){
-
-            console.log("DWN");
-            list.xtag.data.lastScroll = list.scrollTop;
-
-            // remove node on top
-            while(list.scrollTop > list.firstChild.children[idx++].offsetTop){}
-            if (idx-2 > 0){
-
-              var before = list.scrollHeight;
-              list.firstChild.removeChild(list.firstChild.firstChild);
-              
-              list.firstChild.style.marginTop = list.firstChild.style.marginTop.length ? 
-                Number(list.firstChild.style.marginTop.match(/(\d+)/)[1]) + (before - list.scrollHeight) + "px" : 
-                (before - list.scrollHeight) + "px";
-              
-              console.log(list.firstChild.style.marginTop, list.scrollHeight);
+            idx = list.xtag.data.index-1;
+            while (idx>-1){
+                var data = list.items[idx];
+                list.render.call(list,
+                  list.innerList.lastChild, 
+                  data,
+                  idx);
+                list.innerList.insertBefore(list.innerList.lastChild, list.innerList.firstChild);
+                idx--;
             }
-
-            // add nodes to bottom
+            list.xtag.data.index = 0;
+            list.firstChild.style.marginTop = 0 + "px";
+            list.firstChild.style.marginBottom = list.items.length * list.xtag.data.avgHeight; + "px";
+            return;
           }
-          
-          
+
+          if (delta>0){
+
+            idx = list.xtag.data.index + list.xtag.data.buffer;
+
+            if (list.xtag.data.delta > avgHeight && list.items.length > idx){
+
+// this height is wrong, it causes the list to jump.  Some reason the avgHeight is closer
+// but there has to be a way to get the correct height
+
+              var itemHeight = avgHeight; //list.innerList.firstChild.scrollHeight;
+
+              list.xtag.data.delta -= itemHeight;
+
+              list.firstChild.style.marginTop = (marginTop + itemHeight) + "px";
+              list.firstChild.style.marginBottom = Math.max(0,(marginBottom - itemHeight)) + "px";
+
+              list.render.call(list,
+                list.innerList.firstChild, 
+                list.items[idx],
+                idx);
+
+              list.innerList.appendChild(list.innerList.firstChild);
+
+              list.xtag.data.index++;
+            }
+          }
+          else if (delta<0){
+
+            if (list.xtag.data.delta * -1 > avgHeight && list.xtag.data.index > 0){
+
+              idx = --list.xtag.data.index;// - 1;
+              
+              var itemHeight = avgHeight; //list.innerList.firstChild.scrollHeight;
+
+              list.xtag.data.delta += itemHeight;
+
+              list.firstChild.style.marginTop = Math.max(0,(marginTop - itemHeight)) + "px";
+              list.firstChild.style.marginBottom = (marginBottom + itemHeight) + "px";
+
+              list.render.call(list,
+                list.innerList.lastChild, 
+                list.items[idx],
+                idx);
+
+              list.innerList.insertBefore(list.innerList.lastChild, list.innerList.firstChild);
+
+            }
+          }
+
+
         });
       }
     },
@@ -130,6 +152,30 @@
         set: function(value){
           this.xtag.data.index = Number(value);
         }
+      },
+      buffer: {
+        get: function(){
+          return this.xtag.data.buffer;
+        },
+        set: function(value){
+          this.xtag.data.buffer = Number(value);
+          init.call(this);
+        }
+      },
+      render: {
+        get: function(){
+          return this.xtag.data.renderFn || function(elem, data, idx){
+            console.log("rendering", elem, data);
+          };
+        },
+        set: function(fn){
+          return this.xtag.data.renderFn = fn;
+        }
+      }, 
+      innerList: {
+        get: function(){
+          return this.firstChild.firstChild.firstChild;
+        }
       }
     }
   });
@@ -138,19 +184,58 @@
 
 function init(){
 
-  var idx = this.index,
+  var idx = this.index,    
     length = this.items.length;
 
-  while(!this.xtag.data.overflown && idx < length){
-    var item = this.items[idx++];
-     var elem = document.createElement('x-item');
-     elem.title = item.title;
-     elem.description = item.description;
-     this.firstChild.appendChild(elem);     
+  this.innerList.innerHTML = '';
+  for (var count = 0; count < this.buffer && (idx+count)<length; count++){    
+    var item = this.items[count+idx];
+    var elem = document.createElement('li');
+    this.innerList.appendChild(elem);
+    this.render.call(this, elem, item, count);
   }
+
+  var list = this;
+
+  // center list
+  setTimeout(function(){
+    var growBoxHeight = getValue(list.firstChild.style.height); 
+    if (growBoxHeight < list.scrollHeight){    
+      var topMargin = (list.scrollHeight/2) - (growBoxHeight/2);    
+      list.firstChild.style.marginTop = topMargin + "px";
+    } else {
+      console.log("center larger list", growBoxHeight, list.scrollHeight);
+    }
+    setMargins.call(list);
+  },0);
   
+  
+
 }
 
+function setMargins(){
+
+  var idx = this.index,    
+    length = this.items.length,
+    marginTop = getValue(this.firstChild.style.marginTop),
+    growBoxHeight = getValue(this.firstChild.style.height),
+    avgHeight = 0;
+
+  avgHeight = growBoxHeight / this.buffer;
+
+  marginTop = avgHeight * idx + marginTop;
+  var bottomMargin = avgHeight * (length - this.buffer - idx);
+
+  console.log("DEBUG setMargins:",bottomMargin, marginTop, avgHeight, (length - this.buffer - idx));
+
+  this.firstChild.style.marginTop = marginTop + "px";
+  this.firstChild.style.marginBottom = bottomMargin + "px";
+
+}
+
+function getValue(value){
+  return Number(value.length ? value.match(/(\d+)/)[1] : 0);
+}
 
 
 })();

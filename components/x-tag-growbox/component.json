@@ -1,0 +1,27 @@
+{
+  "name": "x-tag-growbox",
+  "description": "Dynamically grows according to inner content",
+  "version": "0.0.0",
+  "keywords": [
+    "web-components",
+    "growbox",
+    "structural",
+    "element",
+    "x-tag"
+  ],
+  "scripts": [
+    "src/growbox.js"
+  ],
+  "dependencies": {
+    "x-tag-core": "*"
+  },
+  "gitHead": "8ce5dd4194999df937db28f5cdadfa83c443d87b",
+  "readme": "## Install\n\n*Requirements*\n\nNode / NPM\n\nBower (Package Manager)\n\n```\nnpm install bower -g\n```\n\nInside your project run:\n\n```\nbower install x-tag-growbox\n```\n\nThis downloads the component and dependencies to ./components\n\n\n\n## About\n\nGrowbox resizes when the inner content changes sizes.  It's perfect for content that changes size and you don't want to have to resize the parent element.\n\n## Usage\n\n```\n\t<x-growbox id=\"growbox\">\n\t\t<h1>HI</h1>\n\t\t<p>Some content</p>\n\t</x-growbox>\n```\n\n",
+  "readmeFilename": "README.md",
+  "_id": "x-growbox@0.1.0",
+  "commit": "8ce5dd4194999df937db28f5cdadfa83c443d87b",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/x-tag/growbox.git"
+  }
+}
