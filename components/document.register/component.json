@@ -8,14 +8,14 @@
     "element",
     "x-tag"
   ],
-  "scripts": [
+  "main": [
     "src/document.register.js"
   ],
-  "gitHead": "26ac6f623607cd40c06973c0c11f85fcda812dbf",
+  "gitHead": "44638743300a17dbeddf8f9f52fae549593b8d6e",
   "readme": "web-components\n==============\n\nCross-browser W3 Web Components polyfills and helpers",
   "readmeFilename": "README.md",
   "_id": "document.register@0.1.0",
-  "commit": "26ac6f623607cd40c06973c0c11f85fcda812dbf",
+  "commit": "44638743300a17dbeddf8f9f52fae549593b8d6e",
   "repository": {
     "type": "git",
     "url": "git://github.com/mozilla/web-components.git"

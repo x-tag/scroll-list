@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
 
     <title>Scrolling - List</title>
+    <link rel="stylesheet" type="text/css" href="x-tag-components.css" />
     <link rel="stylesheet" type="text/css" href="../src/main.css" />
     
-    <script type="text/javascript" src="../components/document.register/src/document.register.js"></script>
-    <script type="text/javascript" src="../components/x-tag-core/src/core.js"></script>
+    <script type="text/javascript" src="x-tag-components.js"></script>    
     <script type="text/javascript" src="../src/main.js"></script>
     
     <style>
@@ -50,7 +50,21 @@
     while(iter--){
       items.splice(0,0, { title: 'Item '+ iter, description: 'Describing item ' + iter });     
     }
-    document.getElementById('list').items = items;
+
+    var list = document.getElementById('list');
+    list.render = function(elem, data, idx){
+      
+      if(!elem.firstChild){
+        elem.innerHTML = '<h2 class="passiveName"></h2><p class="text_caption"></p>';
+      }
+
+      elem.dataset.id = idx;
+      elem.children[0].innerHTML = data.title;
+      elem.children[1].innerHTML = data.description;
+    }
+
+    list.items = items;;
+
   });
 
   xtag.addEvent(document.body,'click:delegate(button)', function(e){

@@ -13,7 +13,6 @@
     "src/main.js"
   ],
   "dependencies": {
-    "x-tag-core": "*",
-    "x-tag-growbox": "*"
+    "x-tag-core": "*"    
   }
 }

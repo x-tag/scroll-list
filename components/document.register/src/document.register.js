@@ -15,10 +15,15 @@ if (!(document.register || {}).__polyfill__){
         if (options.prototype && !('setAttribute' in options.prototype)) {
           throw new TypeError("Unexpected prototype for " + name + " element - custom element prototypes must inherit from the Element interface");
         }
-        var lifecycle = options.lifecycle || {},
+        var _prototype = options.prototype || Object.create((win.HTMLSpanElement || win.HTMLElement).prototype),
+            lifecycle = options.lifecycle || {},
             tag = tags[name] = {
-              'prototype': options.prototype || Object.create((win.HTMLSpanElement || win.HTMLElement).prototype),
-              'fragment': options.fragment || document.createDocumentFragment(),
+              'constructor': function(){
+                return doc.createElement(name);
+              },
+              _prototype: doc.__proto__ ? null : unwrapPrototype(_prototype),
+              'prototype': _prototype,
+              'fragment': options.fragment || doc.createDocumentFragment(),
               'lifecycle': {
                 created: lifecycle.created || function(){},
                 removed: lifecycle.removed || function(){},
@@ -26,11 +31,22 @@ if (!(document.register || {}).__polyfill__){
                 attributeChanged: lifecycle.attributeChanged || function(){}
               }
             };
+        tag.constructor.prototype = tag.prototype;
         if (domready) query(doc, name).forEach(function(element){
           upgrade(element, true);
         });
-        return tag.prototype;
+        return tag.constructor;
       };
+    
+    function unwrapPrototype(proto){
+      var definition = {},
+          names = Object.getOwnPropertyNames(proto),
+          index = names.length;
+      if (index) while (index--) {
+        definition[names[index]] = Object.getOwnPropertyDescriptor(proto, names[index]);
+      }
+      return definition;
+    }
     
     function typeOf(obj) {
       return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase();
@@ -98,7 +114,9 @@ if (!(document.register || {}).__polyfill__){
               return upgraded;
             });
           }
-          upgraded.__proto__ = tag.prototype;
+          if (doc.__proto__) upgraded.__proto__ = tag.prototype;
+          else Object.defineProperties(upgraded, tag._prototype);
+          upgraded.constructor = tag.constructor;
           upgraded._elementupgraded = true;
           if (!mutation) delete upgraded._suppressObservers;
           tag.lifecycle.created.call(upgraded, tag.prototype);
@@ -188,7 +206,7 @@ if (!(document.register || {}).__polyfill__){
         for (var z in diff) {
           var type = element._records[(z == 'added') ? 'inserted' : 'removed'],
             nodes = record[z + 'Nodes'], length = nodes.length;
-          for (i = 0; i < length && diff[z].indexOf(nodes[i]) == -1; i++){
+          for (var i = 0; i < length && diff[z].indexOf(nodes[i]) == -1; i++){
             diff[z].push(nodes[i]);
             type.forEach(function(fn){
               fn(nodes[i], record);
@@ -217,12 +235,12 @@ if (!(document.register || {}).__polyfill__){
       };
       
       var _setAttribute = Element.prototype.setAttribute;   
-      Element.prototype.setAttribute = function(attr, value){
+      Element.prototype.setAttribute = function(attr, value, skip){
         var tag = getTag(this),
             last = this.getAttribute(attr);
         _setAttribute.call(this, attr, value);
         if (tag && last != this.getAttribute(attr)) {
-          tag.lifecycle.attributeChanged.call(this, attr, value, last);
+          tag.lifecycle.attributeChanged.call(this, attr, value, last, skip);
         } 
       };
       

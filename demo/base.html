@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
 
     <title>Scrolling - List</title>
+    <link rel="stylesheet" type="text/css" href="x-tag-components.css" />
     <link rel="stylesheet" type="text/css" href="../src/main.css" />
     
-    <script type="text/javascript" src="../components/document.register/src/document.register.js"></script>
-    <script type="text/javascript" src="../components/x-tag-core/src/core.js"></script>
+    <script type="text/javascript" src="x-tag-components.js"></script>    
     <script type="text/javascript" src="../src/main.js"></script>
     
     <style>
@@ -38,7 +38,7 @@
     <a href="index.html">Web Component Version</a>
   </div>
 
-  <div id="list"></div>
+  <ul id="list"></ul>
 
  
 
@@ -49,9 +49,8 @@
     var items = [], iter = 50;
     var list = document.getElementById('list');
     while(iter--){
-      var item = document.createElement('x-item');
-      item.heading = 'Item '+ iter;
-      item.description =  'Describing item ' + iter;
+      var item = document.createElement('li');
+      item.innerHTML = "<h2>Item" + iter + "</h2><p>Describing item " + iter + "</p>";    
       list.insertBefore(item, list.firstChild);
     }
 
@@ -63,9 +62,8 @@
     var list = document.getElementById('list');
     list.innerHTML = '';
     while(iter--){
-      var item = document.createElement('x-item');
-      item.heading = 'Item '+ iter;
-      item.description =  'Describing item ' + iter;
+      var item = document.createElement('li');
+      item.innerHTML = "<h2>Item" + iter + "</h2><p>Describing item " + iter + "</p>";      
       list.insertBefore(item, list.firstChild);
     }
   });
