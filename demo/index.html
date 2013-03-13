@@ -5,12 +5,11 @@
     <meta charset="utf-8" />
 
     <title>Scrolling - List</title>
+
     <link rel="stylesheet" type="text/css" href="../src/main.css" />
-    <link rel="stylesheet" type="text/css" href="../components/x-tag-growbox/src/growbox.css" />
-    
-    <script type="text/javascript" src="../components/document.register/src/document.register.js"></script>
-    <script type="text/javascript" src="../components/x-tag-core/src/core.js"></script>
-    <script type="text/javascript" src="../components/x-tag-growbox/src/growbox.js"></script>
+    <link rel="stylesheet" type="text/css" href="x-tag-components.css" />
+
+    <script type="text/javascript" src="x-tag-components.js"></script>
     <script type="text/javascript" src="../src/main.js"></script>
     
     <style>
@@ -21,7 +20,7 @@
       #buttons {
         float: right;
       }
-      .x-grow-content li{
+      x-scrolling-list > ul > * {
         background-color: #ddd;
       }
     </style>
@@ -29,6 +28,7 @@
   
 <body>
   <h2>X-Tag Scrolling List</h2>
+  <p>This scrolling list can hold thousands of elements and not slow down.</p>
   <div id="buttons">
     <button data-items="100">Load 100 Items</button>
 
@@ -46,6 +46,8 @@
 
   </x-scrolling-list>
 
+
+
  
 
 </body>
@@ -59,13 +61,14 @@
       items.splice(0,0, { title: 'Item '+ iter, description: 'Describing item ' + iter });     
     }
     list.render = function(elem, data, idx){
-      console.log("rendering ", idx);
+      //console.log("rendering ", idx);
       if(!elem.firstChild){
         elem.innerHTML = '<h2 class="passiveName"></h2><p class="text_caption"></p>';
       }
 
-      elem.style.height = (Math.round(Math.random() * 3)+1) * 95 + "px";
-      elem.style.marginTop = (Math.round(Math.random() * 5)+1) * 8 + "px";
+      //elem.style.height = (Math.round(Math.random() * 3)+1) * 95 + "px";
+      //elem.style.marginTop = (Math.round(Math.random() * 5)+1) * 8 + "px";
+      elem.dataset.id = idx;
       elem.children[0].innerHTML = data.title;
       elem.children[1].innerHTML = data.description;
     }
@@ -74,6 +77,7 @@
 
   xtag.addEvent(document.body,'click:delegate(button)', function(e){
     var items = [], iter = e.target.dataset.items;
+    console.log("clicky", iter)
     while(iter--){
       items.splice(0,0, { title: 'Item '+ iter, description: 'Describing item ' + iter });
     }

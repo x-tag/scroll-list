@@ -14,136 +14,45 @@ window.requestAnimFrame = (function(){
   xtag.register('x-scrolling-list', {
     lifecycle:{
       created: function(){
-        this.innerHTML = '<x-growbox></x-growbox>';
+        this.innerHTML = '<ul></ul>';
         this.xtag.data = {
           lastScroll: 0,
           index: 0,
           items: [],
-          buffer: 8,
+          buffer: 15,
           avgHeight: 0,          
           delta: 0,
           updating: false
         };        
       }
     },
-    events:{
-      'overflow': function(e){
-      
-      }, 
-      'underflow': function(e){
-
-      },
-      'grow': function(e){
-        if (this.scrollHeight > getValue(this.firstChild.style.height)){
-          
-        }
-        e.stopPropagation();
-      },
-      'shrink': function(e){
-        console.log("shrink");        
-        e.stopPropagation();
-      },
+    events:{            
       'scroll': function(e){
         var list = this,
           delta = 0;
         
         delta = list.scrollTop - list.xtag.data.lastScroll;
-
         list.xtag.data.lastScroll = list.scrollTop;
-
-        list.xtag.data.delta += delta;
+        list.xtag.data.delta += delta;        
         
         requestAnimFrame(function(){
 
-          var idx = 0,
-            growBoxHeight = getValue(list.firstChild.style.height),
-            marginTop = getValue(list.firstChild.style.marginTop),
-            marginBottom = getValue(list.firstChild.style.marginBottom),
-            avgHeight = growBoxHeight / list.buffer;
-
-
-          if (list.innerList.firstChild.getBoundingClientRect().top > 0 && list.xtag.data.index == 0){
-            console.log("TOP");
-            
-            idx = list.xtag.data.index-1;
-            while (idx>-1){
-                var data = list.items[idx];
-                list.render.call(list,
-                  list.innerList.lastChild, 
-                  data,
-                  idx);
-                list.innerList.insertBefore(list.innerList.lastChild, list.innerList.firstChild);
-                idx--;
-            }
-            list.xtag.data.index = 0;
-            list.firstChild.style.marginTop = 0 + "px";
-            list.firstChild.style.marginBottom = list.items.length * list.xtag.data.avgHeight; + "px";
-            return;
-          }
-
           if (delta>0){
-
-            idx = list.xtag.data.index + list.xtag.data.buffer;
-
-
-            if (list.innerList.firstChild.getBoundingClientRect().bottom < (list.innerList.firstChild.marginBottom || 0 * -1) && list.items.length > idx){
-
-
-// this height is wrong, it causes the list to jump.  Some reason the avgHeight is closer
-// but there has to be a way to get the correct height
-
-            var itemHeight = list.innerList.firstChild.getBoundingClientRect().height + 
-                (list.innerList.firstChild.marginTop || 0) + 
-                (list.innerList.firstChild.marginBottom || 0);
-             
-
-              list.xtag.data.delta -= itemHeight;
-
-              list.firstChild.style.marginTop = (marginTop + itemHeight) + "px";
-              list.firstChild.style.marginBottom = Math.max(0,(marginBottom - itemHeight)) + "px";
-
-              list.render.call(list,
-                list.innerList.firstChild, 
-                list.items[idx],
-                idx);
-
-              list.innerList.appendChild(list.innerList.firstChild);
-
-
-              list.xtag.data.index++;
+            // Scrolling Down, has the first gone out of view?
+            if (list.innerList.firstChild.getBoundingClientRect().bottom < 
+              (getValue(list.innerList.firstChild.marginBottom) || 0 * -1)){
+              scrollDown.call(list);
             }
           }
           else if (delta<0){
-            
-
-            if (list.innerList.firstChild.getBoundingClientRect().top > 0  && list.xtag.data.index > 0){
-
-
-              var itemHeight = list.innerList.firstChild.getBoundingClientRect().height + 
-                (list.innerList.firstChild.marginTop || 0) + 
-                (list.innerList.firstChild.marginBottom || 0);
-
-
-              idx = --list.xtag.data.index;// - 1;
-
-              list.xtag.data.delta += itemHeight;
-
-              list.firstChild.style.marginTop = Math.max(0,(marginTop - itemHeight)) + "px";
-
-              list.firstChild.style.marginBottom = (marginBottom + itemHeight) + "px";
-
-              list.render.call(list,
-                list.innerList.lastChild, 
-                list.items[idx],
-                idx);
-
-              list.innerList.insertBefore(list.innerList.lastChild, list.innerList.firstChild);
-
+            // Scrolling Up,  Is the first element completely in view? 
+            if (list.innerList.firstChild.getBoundingClientRect().top > 0){
+              scrollUp.call(list);
             }
           }
 
-
         });
+        
       }
     },
     accessors:{
@@ -185,7 +94,7 @@ window.requestAnimFrame = (function(){
       }, 
       innerList: {
         get: function(){
-          return this.firstChild.firstChild.firstChild;
+          return this.firstChild;
         }
       }
     }
@@ -199,6 +108,8 @@ function init(){
     length = this.items.length;
 
   this.innerList.innerHTML = '';
+
+  // Load items to fill the buffer
   for (var count = 0; count < this.buffer && (idx+count)<length; count++){    
     var item = this.items[count+idx];
     var elem = document.createElement('li');
@@ -206,46 +117,108 @@ function init(){
     this.render.call(this, elem, item, count);
   }
 
-  var list = this;
-
-  // center list
-  setTimeout(function(){
-    var growBoxHeight = getValue(list.firstChild.style.height); 
-    if (growBoxHeight < list.scrollHeight){    
-      var topMargin = (list.scrollHeight/2) - (growBoxHeight/2);    
-      list.firstChild.style.marginTop = topMargin + "px";
-    } else {
-      //console.log("center larger list", growBoxHeight, list.scrollHeight);
-    }
-    setMargins.call(list);
-  },0);
-  
-  
-
 }
 
-function setMargins(){
 
-  var idx = this.index,    
-    length = this.items.length,
+var scrollingUp = false;
+function scrollUp(){
+
+  if (scrollingUp == false){
+    scrollingUp = true;
+  } else return;
+
+  var itemHeight = getItemHeight(this.innerList.firstChild), 
     marginTop = getValue(this.firstChild.style.marginTop),
-    growBoxHeight = getValue(this.firstChild.style.height),
-    avgHeight = 0;
+    marginBottom = getValue(this.firstChild.style.marginBottom);
 
-  avgHeight = growBoxHeight / this.buffer;
+  var idx = --this.xtag.data.index;
 
-  marginTop = avgHeight * idx + marginTop;
-  var bottomMargin = avgHeight * (length - this.buffer - idx);
+  this.xtag.data.delta += itemHeight;
 
-  //console.log("DEBUG setMargins:",bottomMargin, marginTop, avgHeight, (length - this.buffer - idx));
+  this.firstChild.style.marginTop = Math.max(0,(marginTop - itemHeight)) + "px";
+  this.firstChild.style.marginBottom = (marginBottom + itemHeight) + "px";
 
-  this.firstChild.style.marginTop = marginTop + "px";
-  this.firstChild.style.marginBottom = bottomMargin + "px";
+  try{
+    this.render.call(this,
+      this.innerList.lastChild, 
+      this.items[idx],
+      idx);
+  }catch(e){
+    console.log("error in render funtion:", e);
+  }
 
+  this.innerList.insertBefore(this.innerList.lastChild, this.innerList.firstChild);
+
+console.log("UP", this.xtag.data.delta, marginTop, marginTop - itemHeight );
+
+  if((this.xtag.data.delta * -1) >= itemHeight){
+    console.log("delta > itemHeight", this.xtag.data.delta, itemHeight);
+    scrollUp.call(this);
+  }
+  else {
+    scrollingUp = false;
+  }
+}
+
+
+var scrollingDown = false;
+function scrollDown(){
+
+  if (scrollingDown == false){
+    scrollingDown = true;
+  } else return;
+
+  var itemHeight = getItemHeight(this.innerList.firstChild), 
+    marginTop = getValue(this.firstChild.style.marginTop),
+    marginBottom = getValue(this.firstChild.style.marginBottom);
+
+  var idx = this.xtag.data.index + this.xtag.data.buffer;
+
+  if (idx > this.xtag.data.items.length-1){
+    console.log("bottom");
+    this.xtag.data.delta = 0;
+    scrollingDown = false;
+    return;
+  }
+
+  this.xtag.data.delta -= itemHeight;
+
+  this.firstChild.style.marginTop = (marginTop + itemHeight) + "px";
+  this.firstChild.style.marginBottom = Math.max(0,(marginBottom - itemHeight)) + "px";
+
+  console.log(idx, "DITEM HEIGHT", itemHeight, "TOP:", marginTop + itemHeight, "BOTTOM:", marginBottom - itemHeight);
+
+try {
+  this.render.call(this,
+    this.innerList.firstChild, 
+    this.items[idx],
+    idx);
+}catch(e){
+  console.log("error in render funtion:", e);
+}
+
+  this.innerList.appendChild(this.innerList.firstChild);
+
+  this.xtag.data.index++;
+
+  if (this.xtag.data.delta >= itemHeight){
+    console.log("delta > itemHeight", this.xtag.data.delta, itemHeight);
+    scrollDown.call(this);
+  }
+  else {
+    scrollingDown = false;
+  }
+}
+
+function getItemHeight(elem){
+  // Get the complete height of an item
+  return Number(elem.getBoundingClientRect().height + 
+    (getValue(elem.marginTop) || 0) + 
+    (getValue(elem.marginBottom) || 0));
 }
 
 function getValue(value){
-  return Number(value.length ? value.match(/(\d+)/)[1] : 0);
+  return Number(value && value.length ? value.match(/(\d+)/)[1] : 0);
 }
 
 

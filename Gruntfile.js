@@ -6,17 +6,26 @@ module.exports = function (grunt) {
     jshint: {
       all: [
         'Gruntfile.js',
-        '<%= meta.src %>',
+        './src/*.js'
       ],
       options: {
         jshintrc: '.jshintrc'
+      }
+    },
+    'smush-components':{
+      options:{
+        fileMap:{
+          js: './demo/x-tag-components.js',
+          css: './demo/x-tag-components.css'
+        }
       }
     }
   });
   
   grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-smush-components');
   
-  grunt.registerTask('test', ['jshint']);
-  grunt.registerTask('default', ['test']);
+  grunt.registerTask('build', ['smush-components', 'jshint'])
+  grunt.registerTask('default', ['jshint']);
 
 };

@@ -3,9 +3,15 @@ x-scrolling-list{
 	border: solid red 3px;
 	overflow: scroll;
 }
-x-item{
-	display: block;
-}
 .scroll-list-top, .scroll-list-bottom{
 	height: 0;
+}
+x-scrolling-list > ul{
+	margin: 0;
+	padding: 0;
+}
+x-scrolling-list > ul > * {
+	margin: 0;
+	padding: 0;
+	list-style: none;
 }
