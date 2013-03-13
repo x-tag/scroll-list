@@ -9,8 +9,9 @@
     "list",
     "x-tag"
   ],
-  "scripts": [
-    "src/main.js"
+  "main": [
+    "src/main.js",
+    "src/main.css"
   ],
   "dependencies": {
     "x-tag-core": "*",

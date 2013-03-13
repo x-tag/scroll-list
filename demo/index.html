@@ -16,9 +16,13 @@
     <style>
       #list{
         height: 600px;
+        
       }
       #buttons {
         float: right;
+      }
+      .x-grow-content li{
+        background-color: #ddd;
       }
     </style>
   </head>
@@ -61,6 +65,7 @@
       }
 
       elem.style.height = (Math.round(Math.random() * 3)+1) * 95 + "px";
+      elem.style.marginTop = (Math.round(Math.random() * 5)+1) * 8 + "px";
       elem.children[0].innerHTML = data.title;
       elem.children[1].innerHTML = data.description;
     }

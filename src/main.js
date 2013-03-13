@@ -62,7 +62,7 @@ window.requestAnimFrame = (function(){
             avgHeight = growBoxHeight / list.buffer;
 
 
-          if (list.scrollTop == 0 && list.xtag.data.index != 0){
+          if (list.innerList.firstChild.getBoundingClientRect().top > 0 && list.xtag.data.index == 0){
             console.log("TOP");
             
             idx = list.xtag.data.index-1;
@@ -85,12 +85,17 @@ window.requestAnimFrame = (function(){
 
             idx = list.xtag.data.index + list.xtag.data.buffer;
 
-            if (list.xtag.data.delta > avgHeight && list.items.length > idx){
+
+            if (list.innerList.firstChild.getBoundingClientRect().bottom < (list.innerList.firstChild.marginBottom || 0 * -1) && list.items.length > idx){
+
 
 // this height is wrong, it causes the list to jump.  Some reason the avgHeight is closer
 // but there has to be a way to get the correct height
 
-              var itemHeight = avgHeight; //list.innerList.firstChild.scrollHeight;
+            var itemHeight = list.innerList.firstChild.getBoundingClientRect().height + 
+                (list.innerList.firstChild.marginTop || 0) + 
+                (list.innerList.firstChild.marginBottom || 0);
+             
 
               list.xtag.data.delta -= itemHeight;
 
@@ -104,20 +109,27 @@ window.requestAnimFrame = (function(){
 
               list.innerList.appendChild(list.innerList.firstChild);
 
+
               list.xtag.data.index++;
             }
           }
           else if (delta<0){
+            
 
-            if (list.xtag.data.delta * -1 > avgHeight && list.xtag.data.index > 0){
+            if (list.innerList.firstChild.getBoundingClientRect().top > 0  && list.xtag.data.index > 0){
+
+
+              var itemHeight = list.innerList.firstChild.getBoundingClientRect().height + 
+                (list.innerList.firstChild.marginTop || 0) + 
+                (list.innerList.firstChild.marginBottom || 0);
+
 
               idx = --list.xtag.data.index;// - 1;
-              
-              var itemHeight = avgHeight; //list.innerList.firstChild.scrollHeight;
 
               list.xtag.data.delta += itemHeight;
 
               list.firstChild.style.marginTop = Math.max(0,(marginTop - itemHeight)) + "px";
+
               list.firstChild.style.marginBottom = (marginBottom + itemHeight) + "px";
 
               list.render.call(list,
