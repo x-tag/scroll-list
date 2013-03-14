@@ -1,5 +1,5 @@
 {
   "name": "Scrolling list Example",
   "description": "Scrolling list allows you to load huge lists of complex data and not bring your browser to a crawl.",
-  "launch_path": "/scrolling-list/demo/index.html"
+  "launch_path": "/scroll-list/demo/index.html"
 }
