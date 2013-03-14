@@ -19,7 +19,6 @@ window.requestAnimFrame = (function(){
           lastScroll: 0,
           index: 0,
           items: [],
-          buffer: 15,
           avgHeight: 0,          
           delta: 0,
           updating: false
@@ -33,20 +32,27 @@ window.requestAnimFrame = (function(){
         
         delta = list.scrollTop - list.xtag.data.lastScroll;
         list.xtag.data.lastScroll = list.scrollTop;
-        list.xtag.data.delta += delta;        
-        
+        list.xtag.data.delta += delta;  
+
         requestAnimFrame(function(){
+
+          if (resetDelta){
+            list.xtag.data.delta = 0;
+            resetDelta = false;
+          }
 
           if (delta>0){
             // Scrolling Down, has the first gone out of view?
-            if (list.innerList.firstChild.getBoundingClientRect().bottom < 
-              (getValue(list.innerList.firstChild.marginBottom) || 0 * -1)){
+            //console.log("rect.bottom", list.innerList.firstChild.getBoundingClientRect())
+            if (
+              list.innerList.firstChild.getBoundingClientRect().bottom - list.getBoundingClientRect().top < 
+              (getValue(list.innerList.firstChild.marginBottom) || 0 * -1)){              
               scrollDown.call(list);
             }
           }
           else if (delta<0){
             // Scrolling Up,  Is the first element completely in view? 
-            if (list.innerList.firstChild.getBoundingClientRect().top > 0){
+            if (list.innerList.firstChild.getBoundingClientRect().top > 0){              
               scrollUp.call(list);
             }
           }
@@ -62,7 +68,7 @@ window.requestAnimFrame = (function(){
         },
         set: function(items){
           this.xtag.data.items = items;
-          init.call(this,items);
+          init.call(this);
         }
       },
       index: {
@@ -71,14 +77,6 @@ window.requestAnimFrame = (function(){
         },
         set: function(value){
           this.xtag.data.index = Number(value);
-        }
-      },
-      buffer: {
-        get: function(){
-          return this.xtag.data.buffer;
-        },
-        set: function(value){
-          this.xtag.data.buffer = Number(value);
           init.call(this);
         }
       },
@@ -100,125 +98,132 @@ window.requestAnimFrame = (function(){
     }
   });
 
-
+var resetDelta = false;
 
 function init(){
 
   var idx = this.index,    
-    length = this.items.length;
+    length = this.items.length,
+    count = 0,
+    avgHeight = 0;
 
   this.innerList.innerHTML = '';
 
   // Load items to fill the buffer
-  for (var count = 0; count < this.buffer && (idx+count)<length; count++){    
+
+  while (
+    this.innerList.getBoundingClientRect().height < 
+    this.getBoundingClientRect().height + (avgHeight*4) && 
+    idx < length
+  ){
     var item = this.items[count+idx];
     var elem = document.createElement('li');
     this.innerList.appendChild(elem);
     this.render.call(this, elem, item, count);
+    count++;
+    avgHeight = this.innerList.getBoundingClientRect().height / count;
   }
+
+  this.innerList.style.marginTop = (this.index * avgHeight) + "px";
+  this.innerList.style.marginBottom = ((length * avgHeight - (idx+count) * avgHeight)) + "px";
+
+  this.scrollTop = this.index * avgHeight;  
+  resetDelta = true;
 
 }
 
 
-var scrollingUp = false;
 function scrollUp(){
 
-  if (scrollingUp == false){
-    scrollingUp = true;
-  } else return;
+  var container = this.innerList,
+    topFirst = container.firstChild.getBoundingClientRect().top,
+    topSecond = container.firstChild.nextSibling.getBoundingClientRect().top, 
+    itemHeight = topFirst > 0 ? topSecond - topFirst : topSecond < 0 ? Math.abs(topFirst - topSecond) :  topSecond + Math.abs(topFirst),
+    marginTop = getValue(container.style.marginTop),
+    marginBottom = getValue(container.style.marginBottom);
 
-  var itemHeight = getItemHeight(this.innerList.firstChild), 
-    marginTop = getValue(this.firstChild.style.marginTop),
-    marginBottom = getValue(this.firstChild.style.marginBottom);
+  if (this.xtag.data.index == 0){
+    this.setAttribute('scroll-start', '');
+    container.style.marginTop = "0px";
+    xtag.fireEvent(this, 'scrollstart');
+    return;
+  }
+
+  this.removeAttribute('scroll-end');
 
   var idx = --this.xtag.data.index;
 
   this.xtag.data.delta += itemHeight;
 
-  this.firstChild.style.marginTop = Math.max(0,(marginTop - itemHeight)) + "px";
-  this.firstChild.style.marginBottom = (marginBottom + itemHeight) + "px";
-
-  try{
+  try {
     this.render.call(this,
       this.innerList.lastChild, 
       this.items[idx],
       idx);
-  }catch(e){
+  } catch(e){
     console.log("error in render funtion:", e);
   }
 
   this.innerList.insertBefore(this.innerList.lastChild, this.innerList.firstChild);
 
-console.log("UP", this.xtag.data.delta, marginTop, marginTop - itemHeight );
+  container.style.marginTop = Math.max(0,(marginTop - itemHeight)) + "px";
+  container.style.marginBottom = (marginBottom + itemHeight) + "px";
 
   if((this.xtag.data.delta * -1) >= itemHeight){
-    console.log("delta > itemHeight", this.xtag.data.delta, itemHeight);
+    // if we've scrolled enough to load another item, load it!  
     scrollUp.call(this);
-  }
-  else {
-    scrollingUp = false;
   }
 }
 
 
-var scrollingDown = false;
+
 function scrollDown(){
 
-  if (scrollingDown == false){
-    scrollingDown = true;
-  } else return;
+  var container = this.innerList,
+    topFirst = container.firstChild.getBoundingClientRect().top,
+    topSecond = container.firstChild.nextSibling.getBoundingClientRect().top, 
+    itemHeight = topFirst > 0 ? topSecond - topFirst : topSecond < 0 ? Math.abs(topFirst - topSecond) :  topSecond + Math.abs(topFirst),
+    marginTop = getValue(container.style.marginTop),
+    marginBottom = getValue(container.style.marginBottom);
 
-  var itemHeight = getItemHeight(this.innerList.firstChild), 
-    marginTop = getValue(this.firstChild.style.marginTop),
-    marginBottom = getValue(this.firstChild.style.marginBottom);
-
-  var idx = this.xtag.data.index + this.xtag.data.buffer;
+  var idx = this.xtag.data.index + this.innerList.children.length;
 
   if (idx > this.xtag.data.items.length-1){
-    console.log("bottom");
-    this.xtag.data.delta = 0;
-    scrollingDown = false;
+    this.setAttribute('scroll-end','');
+    container.style.marginBottom = "0px";
+    xtag.fireEvent(this, 'scrollend');
     return;
   }
 
+  this.removeAttribute('scroll-start');
+
   this.xtag.data.delta -= itemHeight;
 
-  this.firstChild.style.marginTop = (marginTop + itemHeight) + "px";
-  this.firstChild.style.marginBottom = Math.max(0,(marginBottom - itemHeight)) + "px";
-
-  console.log(idx, "DITEM HEIGHT", itemHeight, "TOP:", marginTop + itemHeight, "BOTTOM:", marginBottom - itemHeight);
-
-try {
-  this.render.call(this,
-    this.innerList.firstChild, 
-    this.items[idx],
-    idx);
-}catch(e){
-  console.log("error in render funtion:", e);
-}
+  try {
+    this.render.call(this,
+      this.innerList.firstChild, 
+      this.items[idx],
+      idx);
+  } catch(e){
+    console.log("error in render funtion:", e);
+  }
 
   this.innerList.appendChild(this.innerList.firstChild);
+
+  container.style.marginTop = (marginTop + itemHeight) + "px";
+  container.style.marginBottom = Math.max(0,(marginBottom - itemHeight)) + "px";
 
   this.xtag.data.index++;
 
   if (this.xtag.data.delta >= itemHeight){
-    console.log("delta > itemHeight", this.xtag.data.delta, itemHeight);
+    // if we've scrolled enough to load another item, load it!  
     scrollDown.call(this);
   }
-  else {
-    scrollingDown = false;
-  }
 }
 
-function getItemHeight(elem){
-  // Get the complete height of an item
-  return Number(elem.getBoundingClientRect().height + 
-    (getValue(elem.marginTop) || 0) + 
-    (getValue(elem.marginBottom) || 0));
-}
 
 function getValue(value){
-  return Number(value && value.length ? value.match(/(\d+)/)[1] : 0);
+  return Number(Number(value && value.length ? value.match(/(\d+)/)[1] : 0).toFixed(1));
 }
 
 

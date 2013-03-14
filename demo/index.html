@@ -22,7 +22,7 @@
       }
       x-scrolling-list > ul > * {
         background-color: #ddd;
-      }
+      }   
     </style>
   </head>
   
@@ -38,17 +38,11 @@
 
     <button data-items="50000">Load 50000 Items</button>
 
-    <a href="base.html">HTML Version</a>
-
   </div>
 
   <x-scrolling-list id="list">
 
   </x-scrolling-list>
-
-
-
- 
 
 </body>
 
@@ -66,13 +60,14 @@
         elem.innerHTML = '<h2 class="passiveName"></h2><p class="text_caption"></p>';
       }
 
-      //elem.style.height = (Math.round(Math.random() * 3)+1) * 95 + "px";
-      //elem.style.marginTop = (Math.round(Math.random() * 5)+1) * 8 + "px";
       elem.dataset.id = idx;
       elem.children[0].innerHTML = data.title;
       elem.children[1].innerHTML = data.description;
     }
+    
     document.getElementById('list').items = items;
+
+
   });
 
   xtag.addEvent(document.body,'click:delegate(button)', function(e){
