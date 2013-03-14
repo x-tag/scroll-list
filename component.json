@@ -13,6 +13,7 @@
     "src/main.js"
   ],
   "dependencies": {
-    "x-tag-core": "*"    
+    "x-tag-core": "*", 
+    "x-tag-scroll-list": "*"
   }
 }
