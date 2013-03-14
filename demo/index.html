@@ -47,13 +47,20 @@
 <script type="text/javascript">
   document.addEventListener('DOMContentLoaded', function(){
 
-    if(navigator.mozApps){
-      var install = navigator.mozApps.install('http://x-tag.github.com/scrolling-list/manifest.webapp');
-      install.onsuccess = function(){
-        console.log('Installed');
-      }
-      install.onerror = function(){
-        console.log('install failed', this.error);
+    if (navigator.mozApps){
+      var installed = navigator.mozApps.getSelf();
+      installed.onsuccess = function(){
+        if (request.result){
+          // already installed
+        } else {
+          var install = navigator.mozApps.install('http://x-tag.github.com/scrolling-list/manifest.webapp');
+          install.onsuccess = function(){
+            console.log('Installed');
+          }
+          install.onerror = function(){
+            console.log('install failed', this.error);
+          }
+        }
       }
     }
 
