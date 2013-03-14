@@ -50,7 +50,7 @@
     if (navigator.mozApps){
       var installed = navigator.mozApps.getSelf();
       installed.onsuccess = function(){
-        if (request.result){
+        if (installed.result){
           // already installed
         } else {
           var install = navigator.mozApps.install('http://x-tag.github.com/scrolling-list/manifest.webapp');
