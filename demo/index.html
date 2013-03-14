@@ -46,6 +46,18 @@
 
 <script type="text/javascript">
   document.addEventListener('DOMContentLoaded', function(){
+
+    if(navigator.mozApps){
+      var install = navigator.mozApps.install('http://x-tag.github.com/scrolling-list/manifest.webapp');
+      install.onsuccess = function(){
+        console.log('Installed');
+      }
+      install.onerror = function(){
+        console.log('install failed', this.error);
+      }
+    }
+
+
     var items = [], iter = 50;
     while(iter--){
       items.splice(0,0, { title: 'Item '+ iter, description: 'Describing item ' + iter });     
