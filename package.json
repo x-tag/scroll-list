@@ -1,10 +1,7 @@
 {
   "name": "scrolling-list",
   "description": "",
-  "version": "0.1.0",
-  "scripts": {
-    "test": "grunt test"
-  },
+  "version": "0.1.0", 
   "devDependencies": {
     "grunt": "~0.4.0",
     "grunt-contrib-jshint": "0.1.1",

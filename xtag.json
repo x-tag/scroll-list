@@ -1,0 +1,39 @@
+{	
+	"name": "Scrolling List",
+	"tagName": "x-scroll-list",
+	"version": "0.1.0",
+	"author": "Arron Schaar",
+	"description": "A scrolling list that handles virtually unlimited number of items with very little performance degradation.",
+	"images": [],
+	"categories": ["structural"],
+	"compatibility": {	
+		"firefox": 5,
+		"chrome": 4,
+		"ie": 9,
+		"opera": 12,
+		"android": 2.1,
+		"ios": 4
+	},
+	"documentation": {
+		"description": "",
+		"attributes": {
+			
+		},
+		"events": {
+			"scrollstart": "Fires when list scrolls to the first element.",
+			"scrollend": "Fires when list scrools to the last element."
+		},
+		"methods": {
+
+		}, 
+		"getters": {
+			"items": "Returns the list of items.",
+			"index": "Gets the current scroll index."
+		},
+		"setters": {
+			"items": "Sets the item to iterate over.",
+			"render": "The render function used to create each item.",
+			"index": "Sets the current index and causes it to scroll to that location."
+		}
+	}
+}

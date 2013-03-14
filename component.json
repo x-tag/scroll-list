@@ -10,11 +10,10 @@
     "x-tag"
   ],
   "main": [
-    "src/main.js",
-    "src/main.css"
+    "src/scroll-list.js",
+    "src/scroll-list.css"
   ],
   "dependencies": {
-    "x-tag-core": "*",
-    "x-tag-growbox": "*"
+    "x-tag-core": "*"
   }
 }

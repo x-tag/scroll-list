@@ -6,16 +6,15 @@
 
     <title>Scrolling - List</title>
 
-    <link rel="stylesheet" type="text/css" href="../src/main.css" />
+    <link rel="stylesheet" type="text/css" href="../src/scroll-list.css" />
     <link rel="stylesheet" type="text/css" href="x-tag-components.css" />
 
     <script type="text/javascript" src="x-tag-components.js"></script>
-    <script type="text/javascript" src="../src/main.js"></script>
+    <script type="text/javascript" src="../src/scroll-list.js"></script>
     
     <style>
       #list{
         height: 600px;
-        
       }
       #buttons {
         float: right;
@@ -64,7 +63,7 @@
       elem.children[0].innerHTML = data.title;
       elem.children[1].innerHTML = data.description;
     }
-    
+
     document.getElementById('list').items = items;
 
 

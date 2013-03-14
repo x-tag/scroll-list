@@ -10,7 +10,7 @@ Bower (Package Manager)
 npm install bower -g
 ```
 
-For development the following command to install dependencies
+For development run the following command to install dependencies
 
 ```
 bower install 
@@ -19,12 +19,12 @@ bower install
 
 ## Usage
 
-Basic usage of x-scrolling-list
+Basic usage of x-scroll-list
 
 ```javascript
 // Create a new scrolling list element
 
-var list = document.createElement('x-scrolling-list');
+var list = document.createElement('x-scroll-list');
 document.body.appendChild(list);
 
 // Define what to do when rendering each data item
@@ -36,7 +36,6 @@ list.render = function(element, dataItem, index){
   if(!element.firstChild){  
     elem.innerHTML = '<h2></h2><p></p>';
   }
-
   elem.children[0].innerHTML = dataItem.title;
   elem.children[1].innerHTML = dataItem.description;
 };
