@@ -62,35 +62,67 @@
       }
     }
 
-
-    var items = [], iter = 50;
-    while(iter--){
-      items.splice(0,0, { title: 'Item '+ iter, description: 'Describing item ' + iter });     
-    }
-
     var list = document.getElementById('list');
     list.render = function(elem, data, idx){
       
       if(!elem.firstChild){
-        elem.innerHTML = '<h2 class="passiveName"></h2><p class="text_caption"></p>';
+        elem.innerHTML = '<div></div><p class="text_caption"></p><div></div>';
       }
 
       elem.dataset.id = idx;
-      elem.children[0].innerHTML = data.title;
-      elem.children[1].innerHTML = data.description;
+      elem.children[0].innerHTML = "From: " + data.sender;
+      elem.children[1].innerHTML = data.body;      
     }
 
-    list.items = items;;
+    if(navigator.mozSms){
+      getSmsMessages(function(messages){
+        list.items = messages;
+      });
+    }
+    else {
+      list.items = generateList();  
+    }
+    
 
   });
 
   xtag.addEvent(document.body,'click:delegate(button)', function(e){
     var items = [], iter = e.target.dataset.items;
     while(iter--){
-      items.splice(0,0, { title: 'Item '+ iter, description: 'Describing item ' + iter });
+      items.splice(0,0, createMockSms(iter));
     }
     document.getElementById('list').items = items;
   });
+
+  function generateList(){
+    var items = [], iter = 50;
+    while(iter--){
+      items.splice(0,0, createMockSms(iter));
+    }
+    return items;
+  }
+
+  function getSmsMessages(callback){
+    var smsRequest = navigator.mozSms.getMessages(new SmsFilter(), false);
+    smsRequest.onsuccess = function(){
+      console.log(smsRequest.result);
+      callback(smsRequest.result);
+    }
+    smsRequest.onerror = function(){
+      console.log("error");
+      callback([]);
+    }
+  }
+
+  function createMockSms(iter){
+    return { 
+        sender: 'user_ '+ iter, 
+        body: 'message ' + iter, 
+        timestamp = new Date(iter * 1000), 
+        receiver: 'Me',
+        delivery: iter % 1 == 0 ? 'received' : 'sent'
+      };
+  }
 
 </script>
 
