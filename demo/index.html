@@ -138,20 +138,15 @@
   });
 
   xtag.addEvent(document.body, 'click:delegate(#full_screen)', function(e){
-    var header = document.body.firstElementChild;
-    
-    if (xtag.hasClass(header,'hide')){
+      
+      if (xtag.hasClass(document.getElementById('html_example'), 'hide')){
+        xtag.addClass(document.getElementById('list'), 'full_screen');
+      }
+      else{
+        xtag.addClass(document.getElementById('ul'), 'full_screen'); 
+      }
 
-    }
-    else{
-      /*xtag.query(document, '.button_container').forEach(function(group){      
-        xtag.addClass(group, 'hide');
-        xtag.addClass(header, 'hide');
-      });*/
-
-      xtag.addClass(document.getElementById('list'), 'full_screen');
-
-    }   
+       
   });
 
 
