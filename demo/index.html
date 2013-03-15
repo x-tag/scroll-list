@@ -3,8 +3,7 @@
 
   <head>
     <meta charset="utf-8" />
-
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     <title>Scrolling - List</title>
 
     <link rel="stylesheet" type="text/css" href="sms.css" />
@@ -20,15 +19,14 @@
       #ul {
         overflow: scroll;
         border: solid 2px blue;
-        margin: 0;
-        margin-left: 30px;
+        margin: 0;        
       }
       #sl_buttons, #ul_buttons {
         width: 300px;
-        display: inline-block;
+        display: block;
       }
-      #ul_buttons{
-        margin-left: 35px; 
+      .hide {
+        display: none;
       }
 
     </style>
@@ -37,35 +35,32 @@
 <body>
   <h2>X-Tag Scrolling List</h2>
   <div>
+    <button id="components">Component</button>
+    <button id="html">HTML Overflow</button>
+  </div>
+  <div id="components_example">
     <div id="sl_buttons">
       <button data-items="100">Load 100 Items</button>
-
       <button data-items="1000">Load 1000 Items</button>
-
       <button data-items="10000">Load 10000 Items</button>
-
       <button data-items="50000">Load 50000 Items</button>
-
-      
     </div>
 
+    <x-scrolling-list id="list"></x-scrolling-list>
+
+  </div>
+  
+  <div id="html_example" class="hide">
     <div id="ul_buttons">
       <button data-items="100">Load 100 Items</button>
-
       <button data-items="1000">Load 1000 Items</button>
-
       <button data-items="10000">Load 10000 Items</button>
-
       <button data-items="50000">Load 50000 Items</button>
-
-      
     </div>
+
+    <ul id="ul"><ul>
+
   </div>
-  <x-scrolling-list id="list">
-
-  </x-scrolling-list>
-
-  <ul id="ul"><ul>
 
 </body>
 
@@ -119,6 +114,18 @@
       renderFn(li, item, 0);      
       ul.appendChild(li);
     });
+  });
+
+  xtag.addEvent(document.body, 'click:delegate(#components)', function(e){
+    console.log("components");
+    xtag.addClass(document.getElementById('html_example'), 'hide');
+    xtag.removeClass(document.getElementById('components_example'), 'hide');
+  });
+
+  xtag.addEvent(document.body, 'click:delegate(#html)', function(e){
+    console.log("html");
+    xtag.removeClass(document.getElementById('html_example'), 'hide');
+    xtag.addClass(document.getElementById('components_example'), 'hide');
   });
 
 
