@@ -118,7 +118,7 @@
     return { 
         sender: 'user_ '+ iter, 
         body: 'message ' + iter, 
-        timestamp = new Date(iter * 1000), 
+        timestamp: new Date(iter * 1000), 
         receiver: 'Me',
         delivery: iter % 1 == 0 ? 'received' : 'sent'
       };
