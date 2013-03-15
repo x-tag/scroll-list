@@ -22,11 +22,21 @@
         margin: 0;        
       }
       #sl_buttons, #ul_buttons {
-        width: 300px;
-        display: block;
+        width: 300px;        
       }
       .hide {
         display: none;
+      }
+      .full_screen{
+        -moz-box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        box-sizing: border-box;
+        position: absolute;
+        height: 100% !important;
+        width: 100% !important;
+        top: 0;
+        left: 0;
+        background-color: white;
       }
 
     </style>
@@ -34,12 +44,13 @@
   
 <body>
   <h2>X-Tag Scrolling List</h2>
-  <div>
+  <div id="controls">
     <button id="components">Component</button>
     <button id="html">HTML Overflow</button>
+    <button id="full_screen">FullScreen</button>
   </div>
   <div id="components_example">
-    <div id="sl_buttons">
+    <div id="sl_buttons" class="button_container">
       <button data-items="100">Load 100 Items</button>
       <button data-items="1000">Load 1000 Items</button>
       <button data-items="10000">Load 10000 Items</button>
@@ -51,7 +62,7 @@
   </div>
   
   <div id="html_example" class="hide">
-    <div id="ul_buttons">
+    <div id="ul_buttons" class="button_container">
       <button data-items="100">Load 100 Items</button>
       <button data-items="1000">Load 1000 Items</button>
       <button data-items="10000">Load 10000 Items</button>
@@ -116,18 +127,32 @@
     });
   });
 
-  xtag.addEvent(document.body, 'click:delegate(#components)', function(e){
-    console.log("components");
+  xtag.addEvent(document.body, 'click:delegate(#components)', function(e){    
     xtag.addClass(document.getElementById('html_example'), 'hide');
     xtag.removeClass(document.getElementById('components_example'), 'hide');
   });
 
-  xtag.addEvent(document.body, 'click:delegate(#html)', function(e){
-    console.log("html");
+  xtag.addEvent(document.body, 'click:delegate(#html)', function(e){    
     xtag.removeClass(document.getElementById('html_example'), 'hide');
     xtag.addClass(document.getElementById('components_example'), 'hide');
   });
 
+  xtag.addEvent(document.body, 'click:delegate(#full_screen)', function(e){
+    var header = document.body.firstElementChild;
+    
+    if (xtag.hasClass(header,'hide')){
+
+    }
+    else{
+      /*xtag.query(document, '.button_container').forEach(function(group){      
+        xtag.addClass(group, 'hide');
+        xtag.addClass(header, 'hide');
+      });*/
+
+      xtag.addClass(document.getElementById('list'), 'full_screen');
+
+    }   
+  });
 
 
   function renderFn(elem, data, idx){      
